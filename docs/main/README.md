@@ -1,17 +1,9 @@
----
-home: true
-heroText: Code Library - 前端
-actionText: 快速上手 →
-actionLink: /main/
-footer: © 2021 Developed by GodGc. 
----
-
-
 # Front-end Docs
 
 __I hope this doc can help u know something u dont know yet.__
 
 <!-- ![](https://tva1.sinaimg.cn/large/00831rSTgy1gcseqxx1gkj30u00u7qj2.jpg) -->
+
 
 
 
@@ -43,3 +35,4 @@ Blog: <a href="http://www.godrry.com" >CLICK HERE</a>
 Email: zuitianlai@vip.qq.com 
 
 </details>
+
