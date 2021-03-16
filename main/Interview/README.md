@@ -192,7 +192,7 @@ export default function Portal(WrappedComponent) {
 2. react+redux
     - 点击页面一个按钮改变一个 redux 中的值，页面中 3 个组件进行了改变，请问这个数据是如何流动并且触发到这 3 个组件上的，对应的 api 需要讲出 以及 数据流
 3. react 中长列表定时推送一条新数据插入到最顶上，如果做到性能优化，保证浏览器不卡死
-    - 这个点参照长列表渲染（[长列表优化](http://www.godrry.com/FEDocs/#/javascript/ES5#react%E9%95%BF%E5%88%97%E8%A1%A8%E4%BC%98%E5%8C%96)）
+    - 这个点参照长列表渲染（[长列表优化](http://www.godrry.com/code-library/#/JavaScript/ES5#react%E9%95%BF%E5%88%97%E8%A1%A8%E4%BC%98%E5%8C%96)）
 4. webpack 中 有 ABCD 四个依赖（js），如何在打包的时候把 ABC 打包到一个文件里，D 打包在另外一个文件里
 5. webpack 如果缓存某个库，以达到下次打包时加快打包速度
 
