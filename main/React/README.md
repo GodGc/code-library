@@ -39,7 +39,7 @@ React 小书： http://huziketang.mangojuice.top/books/react/
     如果DOM上绑定了过多的事件处理函数，整个页面响应以及内存占用可能都会受到影响。
     避免DOM事件滥用，同时确保多端浏览器事件处理机制统一（兼容性），React则使用SyntheticEvent进行了中间层接管,在事件合成层进行处理
 - 如何在React使用原生事件
-    原生事件需要绑定在真实的DOM上，所以这个时候DOM需要被渲染出来，在声明周期 `componentDisMount` 进行绑定
+    原生事件需要绑定在真实的DOM上，所以这个时候DOM需要被渲染出来，在声明周期 `componentDidMount` 进行绑定
     
     ```javascript
     class Demo extends React.PureComponent {

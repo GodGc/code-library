@@ -1,17 +1,24 @@
 # 网络协议
 
 ## UDP
+
 UDP是一种面向报文的协议，它不会对报文进行任何处理，只负责搬运。
 特点：
+
 - 不可靠性
+
     UDP是无连接的，也就是说通信不需要建立和断开连接
     UDP是不可靠的，协议收到什么数据就传输什么数据，不备份也不会关心接收方能否收到
     UDP没有拥塞控制，一直会以恒定的速度发送数据。可能会造成丢包，但是如果在某些实时性要求高的场景（电话会议）就需要使用UDP而不是TCP
+
 - 高效
+
     简单性决定了它的开销较小；UDP协议头只有8字节。
+
 - 多种传输方式
+
     UDP提供了单播，多播，广播的功能
-    
+
 ## TCP
 
 TCP是HTTP下层的协议，它是无连接的，虽然TCP看似连接了客户端和服务端，但是其实只是两端共同维护了一个状态。
@@ -29,8 +36,8 @@ TCP协议会在连接时进行三次握手，断开连接时进行四次挥手�
     客户端尝试连接服务器，向服务器发送syn包（同步序列编号*Synchronize Sequence Numbers*），syn=j，客户端进入SYN_SEND状态等待服务器确认
 
 - 第二次握手："我在,请讲"
-    服务器接收客户端syn包并确认（ack=j+1），同时向客户端发送一个SYN包（syn=k），即SYN+ACK包，此时服务器进入SYN_RECV状态 
-    
+    服务器接收客户端syn包并确认（ack=j+1），同时向客户端发送一个SYN包（syn=k），即SYN+ACK包，此时服务器进入SYN_RECV状态
+
 - 第三次握手： "好的,巴拉巴拉巴拉"
     客户端收到服务器的SYN+ACK包，向服务器发送确认包ACK(ack=k+1），此包发送完毕，客户端和服务器进入ESTABLISHED状态，完成三次握手
 
@@ -41,35 +48,35 @@ TCP协议会在连接时进行三次握手，断开连接时进行四次挥手�
 - 服务端："好的,我了解了"
    服务器收到这个FIN标识符，它发回一个ACK标识符，确认序号为收到的序号加1。和SYN标识符一样，一个FIN标识符将占用一个序号。
 - 服务端："那我也关闭连接啦"
-    服务器关闭客户端的连接，发送一个FIN标识符给客户端。 
+    服务器关闭客户端的连接，发送一个FIN标识符给客户端。
 - 客户端："好的.我也了解了"
     客户端发回ACK标识符确认，并将确认序号设置为收到序号加1。
 
 ## UDP&TCP的区别
+
 - UDP协议是**不可靠**的，它通信不需要建立和断开连接；TCP是**可靠**的，它通信需要建立和断开连接（三次握手和四次挥手确保传输的可靠性）
 - UDP的开销较小，因为它不需要考虑接收方是否正确完整的接收到了数据（传输协议头部8字节）；TCP的开销较大，因为每次通信都需要进行三次握手和四次挥手（传输协议头部至少20字节）
 - UDP传输无阻塞；TCP传输会有阻塞，所以它有拥塞处理机制
 
-
-
-
 ## HTTP
+
 HTTP协议是无状态协议，不会保存状态。第一次连接和第N次连接都是一样崭新的。
 
 > 先简单介绍下2个概念
 > **副作用**指对服务器上的资源做改变，搜索是无副作用的，注册是副作用的。
 > **幂等**指发送 M 和 N 次请求（两者不相同且都大于 1），服务器上资源的状态一致，比如注册 10 个和 11 个帐号是不幂等的，对文章进行更改 10 次和 11 次是幂等的。
 
+### POST请求和GET请求的区别
 
-### POST请求和GET请求的区别：
 - 在规范的应用场景上说，Get 多用于无副作用，幂等的场景，例如搜索关键字。Post 多用于副作用，不幂等的场景，例如注册。
 - 在技术上说：
   - Get 请求能缓存，Post 不能
   - Post 相对 Get 安全一点点，因为Get 请求都包含在 URL 里，且会被浏览器保存历史纪录，Post 不会，但是在抓包的情况下都是一样的。
   - Post 可以通过 request body来传输比 Get 更多的数据，Get 没有这个技术
     URL有长度限制，会影响 Get 请求，但是这个长度限制是浏览器规定的，不是 RFC 规定的；Post 支持更多的编码类型且不对数据类型限制
-    
+
 ### 常见状态码
+
 **2XX 成功**
 
 - 200 OK，表示从客户端发来的请求在服务器端被正确处理
@@ -85,7 +92,6 @@ HTTP协议是无状态协议，不会保存状态。第一次连接和第N次连
 - 304 not modified，表示服务器允许访问资源，但因发生请求未满足条件的情况
 - 307 temporary redirect，临时重定向，和302含义类似，但是期望客户端保持请求方法不变向新的地址发出请求
 
-
 **4XX 客户端错误**
 
 - 400 bad request，请求报文存在语法错误
@@ -93,17 +99,18 @@ HTTP协议是无状态协议，不会保存状态。第一次连接和第N次连
 - 403 forbidden，表示对请求资源的访问被服务器拒绝
 - 404 not found，表示在服务器上没有找到请求的资源
 
-
 **5XX 服务器错误**
 
 - 500 internal sever error，表示服务器端在执行请求时发生了错误
 - 501 Not Implemented，表示服务器不支持当前请求所需要的某个功能
 - 503 service unavailable，表明服务器暂时处于超负载或正在停机维护，无法处理请求
 
-
 ## HTTPS
+
 HTTPS协议 实际上还是通过HTTP来传输信息的，但是信息通过TLS协议进行了加密
+
 ### TLS协议
+
 它使用了2种加密技术：对称加密和非对称加密
 
 **对称加密：**
@@ -144,12 +151,14 @@ DNS 的作用就是通过域名查询到具体的 IP。
 PS：DNS 是基于 UDP 做的查询。
 
 ## WebSocket
+
 相当于HTTP协议的补丁，为了弥补HTTP这种非持久协议。
 HTTP 1.1 相对于HTTP 1.0，多了一个Connection请求头字段的值：keep-alive，在一个HTTP连接中，可以发送多个Request，接收多个Response。
 
 WebSocket是一种双向通信协议。在建立连接后，WebSocket服务器端和客户端都能主动向对方发送或接收数据，就像Socket一样；WebSocket需要像TCP一样，先建立连接，连接成功后才能相互通信。
 
-### 前端代码：
+### 前端代码
+
 ```javascript
 function socketConnect(url) {
     // 客户端与服务器进行连接
@@ -175,17 +184,15 @@ wsValue.send('new hello')
 wsValue.closeMyself(); 
 ```
 
-
-
 **传统的HTTP通信**
 ![](https://tva1.sinaimg.cn/large/00831rSTgy1gcs8534mr1j30jq0iytdx.jpg)
 
 **WebSocket通信**
 ![](https://tva1.sinaimg.cn/large/00831rSTgy1gcs85ykqgoj30iw0fgadt.jpg)
 
-
 **Websocket握手 示例**
 **客户端：请求头升级**
+
 ```
 GET /chat HTTP/1.1 
 Host: server.example.com 
@@ -203,6 +210,7 @@ Sec-WebSocket-Version: 13：表示websocket的版本。如果服务端不支持�
 Sec-WebSocket-Key：与后面服务端响应首部的Sec-WebSocket-Accept是配套的，提供基本的防护，比如恶意的连接，或者无意的连接。
 
 **服务端：相应协议升级**
+
 ```
 // 状态代码101表示协议切换
 HTTP/1.1 101 Switching Protocols 
@@ -218,10 +226,9 @@ long poll  && ajax轮询
 **特点：**
 服务端可以主动推送信息给客户端
 
-
 ## "一个URL从输入到页面显示都经历了什么"
-> 三端：客户端、中间端（连接过程）、服务端
 
+> 三端：客户端、中间端（连接过程）、服务端
 
 1. 在浏览器输入一个URL，浏览器主进程中的UI线程会判断用户输入的是一个URL还是一个查询字符，如果是一个URL，那么network现成就会执行DNS查询
 2. DNS查询：
@@ -241,10 +248,13 @@ long poll  && ajax轮询
 7. 绘制完成后，关闭TCP连接，期间会有四次挥手
 
 ## 浏览器
+
 ### 同源策略和跨域请求
+
 详细见：[http://www.godrry.com/archives/Same-origin-policy-and-CORS.html](http://www.godrry.com/archives/Same-origin-policy-and-CORS.html)
 
 jsonp的使用代码：兼容性不错，但是只适用于**get**方法
+
 ```HTML
 <script src="http://domain/api?param1=a&param2=b&callback=jsonp"></script>
 <script>
@@ -255,10 +265,9 @@ jsonp的使用代码：兼容性不错，但是只适用于**get**方法
 ```
 
 ### 数据储存
+
 **cookie，localStorage，sessionStorage，indexDB**
 ![](https://tva1.sinaimg.cn/large/00831rSTgy1gcs86c2tsyj315o0emtcs.jpg)
-
-
 
 ### 重绘、回流
 
@@ -270,6 +279,7 @@ jsonp的使用代码：兼容性不错，但是只适用于**get**方法
 回流注定发生重绘，但是重绘不一定发生回流。回流的开销更大。
 
 以下操作会影响性能：
+
 - 改变 window 大小
 - 改变字体
 - 添加或删除样式
@@ -277,18 +287,18 @@ jsonp的使用代码：兼容性不错，但是只适用于**get**方法
 - 定位或者浮动
 - 盒模型
 
-
 **减少重绘和回流：**
- - 使用 translate 替代 top
- - 使用 visibility 替换 display: none ，因为前者只会引起重绘，后者会引发回流（改变了布局）
- - 把 DOM 离线后修改，比如：先把 DOM 给 display:none (有一次 Reflow)，然后你修改 100 次，然后再把它显示出来
 
+- 使用 translate 替代 top
+- 使用 visibility 替换 display: none ，因为前者只会引起重绘，后者会引发回流（改变了布局）
+- 把 DOM 离线后修改，比如：先把 DOM 给 display:none (有一次 Reflow)，然后你修改 100 次，然后再把它显示出来
 
 ### document.ready（jq中的）和window.onload的区别
+
 页面加载完毕有2种情况：
+
 - ready表示文档结构加载完毕（不包含图片等资源）
 - onload表示页面包括图片等资源全部加载完毕
-
 
 ready事件在DOM结构绘制完成之后就会执行，这样能确保就算有大量的媒体文件没加载出来，JS代码一样可以执行。
 
@@ -346,12 +356,13 @@ load事件必须等到网页中所有内容全部加载完毕之后才被执行�
   </body></html>
 ```
 
-
 ## 安全
 
-### XSS攻击：
+### XSS攻击
+
   html代码中嵌入了script脚本内容，`<div><script>alert(1)</script></div>`, 或者在url参数上拼接了script代码
   如何防范：对敏感字符进行转义
+
   ```javascript
 
     function escape(str) {
