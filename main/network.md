@@ -367,7 +367,7 @@ load 事件必须等到网页中所有内容全部加载完毕之后才被执行
 html 代码中嵌入了 script 脚本内容，`<div><script>alert(1)</script></div>`, 或者在 url 参数上拼接了 script 代码
 如何防范：对敏感字符进行转义
 
-````javascript
+```javascript
 
   function escape(str) {
     str = str.replace(/&/g, '&amp;')
@@ -379,14 +379,16 @@ html 代码中嵌入了 script 脚本内容，`<div><script>alert(1)</script></d
     str = str.replace(/\//g, '&#x2F;')
     return str
   }
-  ```
+```
 
 ### CSRF
+
 简单点说，CSRF 就是利用用户的登录态发起恶意请求。
 如何防御防范
 CSRF 可以遵循以下几种规则：
+
 - Get 请求不对数据进行修改
 - 不让第三方网站访问到用户 Cookie（SameSite属性）
 - 阻止第三方网站请求接口（验证 Referer）
 - 请求时附带验证信息，比如验证码或者 token
-````
+
