@@ -752,7 +752,7 @@ fetch 方法接收2个参数
   - method: 请求使用的方法，如 GET、POST。
   - headers: 请求的头信息，包含与请求关联的Headers对象。
   - body: 请求的 body 信息。注意 GET 或 HEAD 方法的请求不能包含 body 信息
-mode: 请求的模式，如 cors、 no-cors 或者 same-origin。
+  - mode: 请求的模式，如 cors、 no-cors 或者 same-origin。
   - credentials: 请求的 credentials，如 omit、same-origin 或者 include。为了在当前域名内自动发送 cookie ， 必须提供这个选项。
 
 ```typescript
