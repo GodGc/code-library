@@ -279,7 +279,7 @@ class EventEmitter {
     }
     // 调用
     emit (event, ..args){
-        this._eventpool[event] && this._eventpool[eveent].forEach(cb=>cb(...args))
+        this._eventpool[event] && this._eventpool[event].forEach(cb=>cb(...args))
     }
     // 注册仅能使用一次
     once (event, callback){
