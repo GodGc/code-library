@@ -258,7 +258,7 @@ getJSON('/posts.json').then(function(json){
 
 
 
-## 实现一个类
+## 实现一个EventEmiter类(事件发布-订阅模式)
 可以on,emit,off,once，注册、调用、取消、注册仅能使用一次的事件
 
 
@@ -279,7 +279,7 @@ class EventEmitter {
     }
     // 调用
     emit (event, ..args){
-        this._eventpool[event] && this._eventpool[eveent].forEach(cb=>cb(...args))
+        this._eventpool[event] && this._eventpool[event].forEach(cb=>cb(...args))
     }
     // 注册仅能使用一次
     once (event, callback){
