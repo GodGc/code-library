@@ -287,7 +287,7 @@ Context 就像是连接每个组件的秘密通道，使用 `connect` 就可打�
   
   export function fetchData () {
       return dispatch => {
-          dispatch(fetchDataBegin());
+          dispatch(fetchProductsBegin());
           return fetch("/data-api")
           	.then(res=>res.json())
               .then(json=>{
