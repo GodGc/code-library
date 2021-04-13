@@ -291,10 +291,10 @@ Context 就像是连接每个组件的秘密通道，使用 `connect` 就可打�
           return fetch("/data-api")
           	.then(res=>res.json())
               .then(json=>{
-              	dispatch(fetchDataSuccess(json.data));
+              	dispatch(fetchProductsSuccess(json.data));
               	return json.data
           	})
-          	.catch(error=> dispatch(fetchDataFailure(error)))
+          	.catch(error=> dispatch(fetchProductsFailure(error)))
       }
   }
   ```
@@ -340,11 +340,7 @@ Context 就像是连接每个组件的秘密通道，使用 `connect` 就可打�
       case FETCH_PRODUCTS_FAILURE:
         // 请求失败，设置 loading 为 "false".
         // 保存错误信息，这样我们就可以在其他地方展示。
-        // 既然失败了，我们没有产品可以展示，因此要把 `items` 清空。
-        //
-        // 当然这取决于你和应用情况：
-        // 或许你想保留 items 数据！
-        // 无论如何适合你的场景就好。
+        // 既然失败了，我们没有数据可以展示，因此要把 `items` 清空。
         return {
           ...state,
           loading: false,
