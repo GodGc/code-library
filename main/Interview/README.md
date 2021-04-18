@@ -104,7 +104,7 @@ Function.prototype.myCall = function(ctx = window){
 
 #### 生命周期
 
-![image-20210418214339372](/Users/cegao/Library/Application Support/typora-user-images/image-20210418214339372.png)
+![image-20210418214339372](https://godrry.com/usr/uploads/2021/04/1463537556.png)
 
 0. 初始化阶段
 
