@@ -2,6 +2,360 @@
 
 > [面试注意事项](https://mp.weixin.qq.com/s?__biz=MjM5MTA1MjAxMQ==&mid=2651235882&idx=2&sn=346a3e9d351b8815d310e5f118719cca&chksm=bd497fae8a3ef6b87920385507804d5c20246051bacf8d9a149e600d8bf5e5c0987ce37e66cd&mpshare=1&scene=1&srcid=&sharer_sharetime=1583535813224&sharer_shareid=0b94c73df48513ed6d090a244e519f53&key=324e443932aeb1ae9c4deb728d1653d6c9e9eb5f60b8cffa095e4548873b0bbe1b6d58184298b76f27714cd1133ff9a205fec0ccf35ed2b8017d070e2089cfbe74667a750d4cd2ac1f30e5253df4168c&ascene=1&uin=NjM4OTgxNjAx&devicetype=Windows+10&version=62080079&lang=zh_CN&exportkey=Ay4Rs8U%2FepT5WxS5SnmPhy4%3D&pass_ticket=D60bwsqfiqlKytevV5nIaAKOFSNlAfUUt42rTxJt2%2B9Wdlua8KxPFpBdC29Jjlgs)
 
+## 充电整理
+
+### 常识
+
+#### HTTP缓存
+
+- 强缓存
+
+  在强制缓存时间内，请求同意资源将使用缓存
+
+  对应相应头：
+
+  【低优先级】`Expires` 过期时间，可以等于0
+
+  【高优先级】`Cache-Control: max-age=60` 指令说明 缓存机制
+
+  可以做兼容处理，先【高】后【低】
+
+- 协商缓存
+
+  对应相应头：
+
+  【高】`Pragma: no-cache`
+
+  【低】`Cache-Control: no-cache/max-age=0`
+
+- 如都未设定，则进入浏览器-服务器协商策略流程
+
+  `Etag: xxxxxx`进行hash对比
+
+  `Last-modified`进行最后更改时间对比
+
+#### Event-Loop
+
+- 同步任务进入执行栈
+  - 同步任务空时，查看异步任务队列是否有完成的
+- 异步任务进入任务队列（堆）
+  - 异步任务进入任务队列后，保持挂起，等待执行栈为空
+  - 异步任务先执行**微任务**、后执行**宏任务**
+
+#### compose实现
+
+```javascript
+function compose(...fns){
+  if(fns.length == 0) arg=>arg;
+  
+  if(fns.length == 1) fns[0];
+  
+  fns.reduce((pre, cur)=>{
+    return (...arg)=> pre(cur(...arg))
+  })
+}
+```
+
+#### flat 拍平数组
+
+```javascript
+function flat(arr){
+  // 边界容错
+  /// ...
+  
+  return arr.reduce((pre, cur) =>{
+    return pre.concat(Array.isArray(cur)? flat(cur): cur)
+  }))
+}
+```
+
+#### 实现一个call
+
+```javascript
+Function.prototype.myCall = function(ctx = window){
+  ctx.fn = this;
+  let restArgs = [...arguments].slice(1);
+  let result = ctx.fn(...restArgs);
+  delete ctx.fn;
+  return result;
+}
+```
+
+### React
+
+> JSX == (Babel) ==> React.createElement => vDom+Fiber => ReactDOM.render => DOM
+
+#### vDOM
+
+- 数据驱动视图
+- vDOM不依附于特定框架
+- 提升研发体验+效率
+- 不一定能够提高性能，需要根据具体的项目体量具体分析
+
+#### Reconcile 调和
+
+> Diff 只是调和过程中的一环
+
+- React 15 是栈调和 **stack reconcile** => 同步的递归过程，所以可能会阻塞用户交互
+- React 16 是fiber调和 **fiber reconcile** => 异步的递归过程，具有 **时间切片、优先级** 的特点 => 提高用户体验度
+  - 时间切片中优先级是由每个 fiber 的 `expirationTime`决定的，`expirationTime`来自`priorityLevel` => 包含用户的UI操作、不同时间等，在React源码中对所有常用时间进行了归类
+  - 如果当前进行一个低优先级任务时，插入一个高优先级任务，则会放弃当前组件所有干到一半的事情，去做更高优先级的任务（用户交互事件等），当所有高优先级任务执行完毕后，react通过callback回到之前渲染到一半的组件，从头开始渲染（所以低优先级任务可能要被执行多次，且其中的生命周期也会多次触发，这也是react去更改生命周期hook的一个原因⬇️）
+    - 移除ComponentWillMount、ComponentWillUpdate、componentWillReceiveProps，增加了一个挂载、更新都会执行的生命周期： `getDerivedStateFromProps(props, state)` 使用props来派生、更新state，是一个静态方法，没有this，所以不能访问到当前组件的this，返回一个对象格式的返回值会被合并到当前组件的state中
+
+#### 生命周期
+
+![image-20210418214339372](/Users/cegao/Library/Application Support/typora-user-images/image-20210418214339372.png)
+
+0. 初始化阶段
+
+1. render阶段
+
+   是一个递归的过程，找出每个组件Effict List并且储存在上一级父组件Fibber节点EffectList中 => firstEffect\lastEffect
+
+   - legacy模式 - 同步 - 目前正在使用的
+
+   - blooking模式 - 过渡模式
+
+   - concurrent模式 => `ReactDom.createRoot(rootNode).render(<App />)` 异步渲染
+
+2. pre-commit阶段
+
+3. commit阶段
+
+   处理Effect List
+
+   - before mutation 阶段 - 尚未渲染DOM至界面
+   - mutation 阶段 - 负责DOM渲染
+   - Layout 阶段： DOM渲染完毕收尾
+
+#### setState
+
+会有同步、异步更新的情况
+
+- 异步时是为了合并多个setState，进行批量更新，避免多次re-render
+- 同步场景：`setTimeout、setInterval、Promise`等，这种场景下因为时执行异步任务，所以会脱离react异步处理中事务调度系统中的 **锁**，`isBatchingUpdate`锁就是个boolean值，当执行时锁住，执行完false，异步执行时锁就已经变成了false，所以会脱离
+
+#### 事件系统
+
+合成事件会在Document上注册一个事件分发函数`dispatchEvent`，负责触发对应的事件，通过正序/倒叙来模拟正常事件触发过程中的捕获/冒泡过程。
+
+优点：
+
+- 在底层上磨平了浏览器之间兼容性的不同差异
+- 在上层向开发者暴露了一个统一、稳定、与DOM原生事件相同的事件接口（e.nativeEvent）
+- 对事件拥有了主动权
+
+总结：事件委托帮助React实现了对所有事件的 **中心化管理**
+
+#### HOOK组件
+
+> 原则：不要在循环、条件或嵌套函数中调用HOOK，因为这样可能会导致每次执行的hooks不一致，要确保HOOKS在每次渲染时都保持相同的执行顺序
+
+**因为HOOKS的正常运行，在底层依赖于一个顺序链表，如果在后续执行HOOKS少了或者多了，则会导致这个顺序链表识别不正常，导致出现bugs**
+
+#### 组件间的通信
+
+- props
+
+- 发布-订阅模式，建立一个事件处理中心 `EventEmitter` ，用来注册、读取调用等
+
+- `Context` api
+
+  - [Provier\Consumer]进行传播和消费store
+  - `const Manager = React.createContext({})`
+
+- `Redux`等第三方状态管理
+
+  工作流程：某个组件的view派发action，reduce处理dispatch过来的action，由actions的不同修改数据，生成新的Store，
+
+  - Store会通过入口组件的provede组件进行注入，子组件会通过connect组件（高阶组件将Store中的数据注入到当前组件的props中，dispatch也会注入进来）
+  - 通过props.store获取祖先Component的store
+  - props包括stateProps、dispatchProps、parentProps,合并在一起得到nextState，作为props传给真正的Component
+  - **componentDidMount时，添加事件this.store.subscribe(this.handleChange)，实现页面交互** - 关键
+  - shouldComponentUpdate时判断是否有避免进行渲染，提升页面性能，并得到nextState
+  - componentWillUnmount时移除注册的事件this.handleChange
+
+#### Redux中使用thunk进行网络请求
+
+使用Redux的中间件：`redux-thunk`进行网络请求，编写对应的actions
+
+```javascript
+export const FETCH_PRODUCTS_BEGIN   = 'FETCH_PRODUCTS_BEGIN';
+export const FETCH_PRODUCTS_SUCCESS = 'FETCH_PRODUCTS_SUCCESS';
+export const FETCH_PRODUCTS_FAILURE = 'FETCH_PRODUCTS_FAILURE';
+
+export const fetchProductsBegin = () => ({
+  type: FETCH_PRODUCTS_BEGIN
+});
+
+export const fetchProductsSuccess = data => ({
+  type: FETCH_PRODUCTS_SUCCESS,
+  payload: { data }
+});
+
+export const fetchProductsFailure = error => ({
+  type: FETCH_PRODUCTS_FAILURE,
+  payload: { error }
+});
+
+export function fetchData () {
+    return dispatch => {
+        dispatch(fetchProductsBegin());
+        return fetch("/data-api")
+            .then(res=>res.json())
+            .then(json=>{
+                dispatch(fetchProductsSuccess(json.data));
+                return json.data
+            })
+            .catch(error=> dispatch(fetchProductsFailure(error)))
+    }
+}
+
+```
+
+对应的reduce
+
+```javascript
+import {
+    FETCH_PRODUCTS_BEGIN,
+    FETCH_PRODUCTS_SUCCESS,
+    FETCH_PRODUCTS_FAILURE
+  } from "./dataActions";
+  
+  export default function dataReducer(state=null, action) {
+    switch(action.type) {
+      case FETCH_PRODUCTS_BEGIN:
+        // 把 state 标记为 "loading" 这样我们就可以显示 spinner 或者其他内容
+        // 同样，重置所有错误信息。我们从新开始。
+        return {
+          ...state,
+          loading: true,
+          error: null
+        };
+  
+      case FETCH_PRODUCTS_SUCCESS:
+        // 全部完成：设置 loading 为 "false"。
+        // 同样，把从服务端获取的数据赋给 data。
+        return {
+          ...state,
+          loading: false,
+          data: action.payload.data
+        };
+  
+      case FETCH_PRODUCTS_FAILURE:
+        // 请求失败，设置 loading 为 "false".
+        // 保存错误信息，这样我们就可以在其他地方展示。
+        // 既然失败了，我们没有产品可以展示，因此要把 `items` 清空。
+        //
+        // 当然这取决于你和应用情况：
+        // 或许你想保留 items 数据！
+        // 无论如何适合你的场景就好。
+        return {
+          ...state,
+          loading: false,
+          error: action.payload.error,
+          items: []
+        };
+  
+      default:
+        // reducer 需要有 default case。
+        return state;
+    }
+  }
+  
+```
+
+然后在对应的组件执行：
+
+`Store.dispatch(fetchData())`
+
+#### 自定义hooks实现一个debounce
+
+```react
+function useDebounce(fn, wait = 50, dep = []){
+  const {current} = useRef({fn, timer=null}); // 创建ref容器存储需要的数据
+  
+  useEffect(function(){ // 挂载fn至ref容器
+    current.fn = fn;
+  }, [fn]);
+  
+  return useCallback(function(...arg){ // 返回函数
+    if(current,timer) clearTimeout(current.timer);
+    
+    current.timer = setTimeout(()=>{
+      current.fn.call(this, ...arg)
+    }, wait)
+  }, dep)
+}
+```
+
+#### React的性能优化
+
+普世类优化：
+
+- 减少不必要的网络请求
+- CDN缓存
+- 代码压缩减少请求文件体积
+- 减少重绘、回流
+- 懒加载、预加载
+
+React侧：
+
+1. `shouldComponentUpdate(nextProps, nextState)`
+
+   增加有条件的判断，手动干预 re-reder，避免父组件内部的值变更导致子组件进行的 re-render
+
+2. `PureComponent + Immutable.js`
+
+   PureComponent内置了props的浅比较 => shollowEqual => 会比较前后的props的Obejct.keys的长度、内容等
+
+   Immutabel.js是避免使用PureComponent导致意外的不更新现象，因为复杂数据是使用的引用地址比较，使用Immutable可以创建“持久性数据”，任何修改动作都会返回一个新值 => 使用map创建，map.set修改
+
+3. React.memo 和 useMemo
+
+   都是给函数组件使用的
+
+   - React.memo是一个高阶组件 => 在相同props下复用最近的一次渲染结果，也可以传入第二个参数：一个自定义对比前后props的函数
+
+     ```react
+     function MyComponent(props) {
+       /* 使用 props 渲染 */
+     }
+     function areEqual(prevProps, nextProps) {
+       /*
+       如果把 nextProps 传入 render 方法的返回结果与
+       将 prevProps 传入 render 方法的返回结果一致则返回 true，
+       否则返回 false
+       */
+     }
+     ```
+
+   - useMemo
+
+     记忆某个值
+
+     `const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);`
+
+     记忆某个组件
+
+     ```react
+     // 子组件
+     function Child(props){};
+     
+     // 使用useMemo包裹
+     return(
+      <div>
+        useMemo(()=>{
+           return Child(data)
+         }, [data])
+       </div>
+     )
+     ```
+
+     是一个更加精细的优化手段，是否需要重复执行某一段逻辑，其返回一个memorized值
+
+   - useCallback也可以使用一下，只有依赖项改变时才会执行回调函数
+
 ## 上海头条广告
 
 1、mock api
@@ -196,7 +550,6 @@ export default function Portal(WrappedComponent) {
 4. webpack 中 有 ABCD 四个依赖（js），如何在打包的时候把 ABC 打包到一个文件里，D 打包在另外一个文件里
 5. webpack 如果缓存某个库，以达到下次打包时加快打包速度
 
-
 ## ZOOM
 
 3月25日下午2:00面试
@@ -227,7 +580,7 @@ export default function Portal(WrappedComponent) {
 - 如何监听页面变化：答：自己暂时还未遇到要监听页面变化的场景，一般都是通过事件来监听某些变化的，比如`onClick`事件等。
    正确：`MutationObserver`
    >MutationObserver给开发者们提供了一种能在某个范围内的DOM树发生变化时作出适当反应的能力.该API设计用来替换掉在DOM3事件规范中引入的Mutation事件.
-   
+
    ```javascript
    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
    
@@ -263,17 +616,18 @@ export default function Portal(WrappedComponent) {
         attributeFilter: ['rows']    
     });
    ```
+
 - ES6有什么新特性
 - 数组的一些常用方法：答了shift\unshift\pop\push(忘记说了XDD)、splice
   实际常用的有：
-    - concat
-    - join
-    - push\pop
-    - shift\unshift
-    - slice
-    - splice
-    - map\forEach
-    - every\filter\find、entries、values、keys、includes(ES6)
+  - concat
+  - join
+  - push\pop
+  - shift\unshift
+  - slice
+  - splice
+  - map\forEach
+  - every\filter\find、entries、values、keys、includes(ES6)
 - 深拷贝：JSON、递归深拷贝
 - 如果对比2个对象，相等还是相同
 - 基本数据类型和复杂数据类型有哪些，都是存储在哪里的：基本数据类型储存在栈、复杂数据类型储存在堆；为什么：读取数据更加方便，尤其针对复杂数据类型
@@ -291,6 +645,7 @@ export default function Portal(WrappedComponent) {
    **记反了，说成了CSRF攻击...不知道面试官有没有察觉...感觉他还听得津津有味的T^T**
    XSS攻击是html代码中嵌入了script脚本内容，`<div><script>alert(1)</script></div>`, 或者在url参数上拼接了script代码
    **如何防范：对敏感字符进行转义**
+
    ```javascript
     function escape(str) {
       str = str.replace(/&/g, '&amp;')
@@ -303,11 +658,9 @@ export default function Portal(WrappedComponent) {
       return str
     }
     ```
-    
+
 - 有什么想问的嘛？
   在ZOOM这家公司里，前端主要负责哪些工作：还技术债、目前前后端还未分离，做工程化、组件化抽离开发（带有公司风格的）
-
-
 
 ### 二面：用人经理面试
 
