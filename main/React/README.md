@@ -232,3 +232,9 @@ class Checkbox extends React.Component {
 
 - `React.PureComponent` 适用于class组件，是一个封装了对比机制的普通组件
 - `React.memo` 适用于函数组件，是一个高阶组件
+
+24. 为什么要弃用`ComponetWillreceiveProps`
+
+    1.class 组件本身就不建议将 props 的数据保存一份到state 中，这样会导致 state 和 props 的数据耦合起来；
+    2.这个方法可以使用 this 来操作，可能会存在某些使用 setState 的神奇脑回路使得无限循环；
+    3.所以后面用静态的 `static getDerivedStateFromProps` 来收缩这个时间钩子的作用，让他真的需要通过 props 派生 state 的时候才用，一般时候不用就不用了
